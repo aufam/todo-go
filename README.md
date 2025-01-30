@@ -4,7 +4,7 @@ utilizing MongoDB for database storage, JWT for authentication, and bcrypt for p
 The project also includes a docker-compose setup to easily deploy the application along with Nginx for frontend support
 and Mongo-Express for database management.
 
-It is a complete rewrite for similar project in [todo-cpp](https://github.com/aufam/todo)
+It is a complete rewrite for similar project of [todo-cpp](https://github.com/aufam/todo)
 
 ## Features
 - User authentication with JWT
@@ -63,14 +63,14 @@ This will start the following services:
 
 ### API Endpoints
 #### Authentication
-- **POST** `/api/v1/signup` – Register a new user
-- **POST** `/api/v1/login` – Login and receive a JWT token
+- **POST** `/api/v1/user/signup` – Register a new user
+- **POST** `/api/v1/user/login` – Login and receive a JWT token
 
 #### Todo Management (Requires JWT)
 - **GET** `/api/v1/todos` – Get all todos
 - **POST** `/api/v1/todo` – Create a new todo
 - **PUT** `/api/v1/todo/:id` – Update a todo
-- **DELETE** `/api/todo/:id` – Delete a todo
+- **DELETE** `/api/v1/todo/:id` – Delete a todo
 
 ### Accessing the Services
 - API: http://localhost:8000/api/v1
@@ -84,6 +84,4 @@ docker-compose down
 
 ## License
 This project is open-source and available under the [MIT License](LICENSE).
-```
 
-Let me know if you need any tweaks! 🚀
