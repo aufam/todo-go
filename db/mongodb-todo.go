@@ -9,9 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (d MongoDB) GetTodo(userID string, todoID string) (models.TodoResponse, error) {
+func (d *MongoDB) GetTodo(ctx context.Context, userID string, todoID string) (models.TodoResponse, error) {
 	col := d.DB.Collection("todos")
-	ctx := context.Background()
 
 	id, err := primitive.ObjectIDFromHex(todoID)
 	if err != nil {
@@ -32,9 +31,8 @@ func (d MongoDB) GetTodo(userID string, todoID string) (models.TodoResponse, err
 	return todo.AsResponse(), nil
 }
 
-func (d MongoDB) GetTodos(userID string) ([]models.TodoResponse, error) {
+func (d *MongoDB) GetTodos(ctx context.Context, userID string) ([]models.TodoResponse, error) {
 	col := d.DB.Collection("todos")
-	ctx := context.Background()
 
 	todos := make([]models.TodoResponse, 0)
 	id, err := primitive.ObjectIDFromHex(userID)
@@ -60,9 +58,8 @@ func (d MongoDB) GetTodos(userID string) ([]models.TodoResponse, error) {
 	return todos, nil
 }
 
-func (d MongoDB) AddTodo(userID string, todo models.TodoForm) (todoID string, err error) {
+func (d *MongoDB) AddTodo(ctx context.Context, userID string, todo models.TodoForm) (todoID string, err error) {
 	col := d.DB.Collection("todos")
-	ctx := context.Background()
 
 	newTodo, err := todo.CreateModel(userID)
 	if err != nil {
@@ -82,9 +79,8 @@ func (d MongoDB) AddTodo(userID string, todo models.TodoForm) (todoID string, er
 	return insertedID.Hex(), nil
 }
 
-func (d MongoDB) ModTodo(userID string, todoID string, todo models.TodoForm) error {
+func (d *MongoDB) ModTodo(ctx context.Context, userID string, todoID string, todo models.TodoForm) error {
 	col := d.DB.Collection("todos")
-	ctx := context.Background()
 
 	id, err := primitive.ObjectIDFromHex(todoID)
 	if err != nil {
@@ -100,9 +96,8 @@ func (d MongoDB) ModTodo(userID string, todoID string, todo models.TodoForm) err
 	return err
 }
 
-func (d MongoDB) DelTodo(userID string, todoID string) error {
+func (d *MongoDB) DelTodo(ctx context.Context, userID string, todoID string) error {
 	col := d.DB.Collection("todos")
-	ctx := context.Background()
 
 	id, err := primitive.ObjectIDFromHex(todoID)
 	if err != nil {

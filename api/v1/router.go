@@ -16,7 +16,7 @@ func SetupRoutes(app *fiber.App, database db.Database) {
 	})
 
 	api.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello World")
+		return c.Status(fiber.StatusOK).JSON("Todo App v1")
 	})
 
 	api.Post("/user/signup", func(c *fiber.Ctx) error {
@@ -25,7 +25,7 @@ func SetupRoutes(app *fiber.App, database db.Database) {
 			return c.Status(fiber.StatusBadRequest).JSON(models.MakeErrorResponse(err))
 		}
 
-		status, response := Signup(c.Locals("db").(db.Database), user)
+		status, response := Signup(c.Context(), c.Locals("db").(db.Database), user)
 		return c.Status(status).JSON(response)
 	})
 
@@ -35,7 +35,7 @@ func SetupRoutes(app *fiber.App, database db.Database) {
 			return c.Status(fiber.StatusBadRequest).JSON(models.MakeErrorResponse(err))
 		}
 
-		status, response := Login(c.Locals("db").(db.Database), user)
+		status, response := Login(c.Context(), c.Locals("db").(db.Database), user)
 		return c.Status(status).JSON(response)
 	})
 
@@ -43,7 +43,7 @@ func SetupRoutes(app *fiber.App, database db.Database) {
 		database := c.Locals("db").(db.Database)
 		userID := c.Locals("userID").(string)
 
-		user, err := database.GetUser(userID)
+		user, err := database.GetUser(c.Context(), userID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(models.MakeErrorResponse(err))
 		}
@@ -55,7 +55,7 @@ func SetupRoutes(app *fiber.App, database db.Database) {
 		database := c.Locals("db").(db.Database)
 		userID := c.Locals("userID").(string)
 
-		err := database.DelUser(userID)
+		err := database.DelUser(c.Context(), userID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(models.MakeErrorResponse(err))
 		}
@@ -67,7 +67,7 @@ func SetupRoutes(app *fiber.App, database db.Database) {
 		database := c.Locals("db").(db.Database)
 		userID := c.Locals("userID").(string)
 
-		todos, err := database.GetTodos(userID)
+		todos, err := database.GetTodos(c.Context(), userID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(models.MakeErrorResponse(err))
 		}
@@ -84,7 +84,7 @@ func SetupRoutes(app *fiber.App, database db.Database) {
 			return c.Status(fiber.StatusBadRequest).JSON(models.MakeErrorResponse(err))
 		}
 
-		todoID, err := database.AddTodo(userID, todo)
+		todoID, err := database.AddTodo(c.Context(), userID, todo)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(models.MakeErrorResponse(err))
 		}
@@ -97,7 +97,7 @@ func SetupRoutes(app *fiber.App, database db.Database) {
 		userID := c.Locals("userID").(string)
 		todoID := c.Params("id")
 
-		todo, err := database.GetTodo(userID, todoID)
+		todo, err := database.GetTodo(c.Context(), userID, todoID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(models.MakeErrorResponse(err))
 		}
@@ -115,7 +115,7 @@ func SetupRoutes(app *fiber.App, database db.Database) {
 			return c.Status(fiber.StatusBadRequest).JSON(models.MakeErrorResponse(err))
 		}
 
-		err := database.ModTodo(userID, todoID, todo)
+		err := database.ModTodo(c.Context(), userID, todoID, todo)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(models.MakeErrorResponse(err))
 		}
@@ -128,7 +128,7 @@ func SetupRoutes(app *fiber.App, database db.Database) {
 		userID := c.Locals("userID").(string)
 		todoID := c.Params("id")
 
-		err := database.DelTodo(userID, todoID)
+		err := database.DelTodo(c.Context(), userID, todoID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(models.MakeErrorResponse(err))
 		}

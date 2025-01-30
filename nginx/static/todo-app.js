@@ -1,12 +1,13 @@
 let token = null;
 let g_username = null;
+const API_ROUTE = ""
 
 // Handle Signup
 async function signup() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
-    const response = await fetch('/user/signup', {
+    const response = await fetch(`${API_ROUTE}/api/v1/user/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -31,7 +32,7 @@ async function login() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
-    const response = await fetch('/user/login', {
+    const response = await fetch(`${API_ROUTE}/api/v1/user/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -53,11 +54,11 @@ async function login() {
 
 // Load Todos
 async function loadTodos() {
-    const response = await fetch('/todos', {
+    const response = await fetch(`${API_ROUTE}/api/v1/todos`, {
         headers: { 'Authentication': `Bearer ${token}` }
     });
     const headerTitle = document.getElementById('header-title');
-    headerTitle.textContent = `${g_username}'s todo list`;
+    headerTitle.textContent = `${g_username}s todo list`;
 
     const todos = await response.json();
     const todoList = document.getElementById('todo-list');
@@ -82,7 +83,7 @@ async function loadTodos() {
 async function createTodo() {
     const task = document.getElementById('new-todo').value;
 
-    const response = await fetch('/todo', {
+    const response = await fetch(`${API_ROUTE}/api/v1/todo`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -98,7 +99,7 @@ async function createTodo() {
 
 // Toggle Todo Status
 async function toggleTodoStatus(id, currentStatus) {
-    const response = await fetch(`/todo/{id}`, {
+    const response = await fetch(`${API_ROUTE}/api/v1/todo/{id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -114,7 +115,7 @@ async function toggleTodoStatus(id, currentStatus) {
 
 // Delete Todo
 async function deleteTodo(id) {
-    const response = await fetch(`/todo/{id}`, {
+    const response = await fetch(`${API_ROUTE}/api/v1/todo/{id}`, {
         method: 'DELETE',
         headers: {
             'Authentication': `Bearer ${token}`

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"todo-go/core"
@@ -8,22 +9,22 @@ import (
 )
 
 type Database interface {
-	GetUserID(user models.UserForm) (string, error)
-	GetUser(userID string) (models.UserResponse, error)
-	GetUsers() ([]models.UserResponse, error)
-	AddUser(user models.UserForm) (userID string, err error)
-	DelUser(userID string) error
+	GetUserID(ctx context.Context, user models.UserForm) (string, error)
+	GetUser(ctx context.Context, userID string) (models.UserResponse, error)
+	GetUsers(ctx context.Context) ([]models.UserResponse, error)
+	AddUser(ctx context.Context, user models.UserForm) (userID string, err error)
+	DelUser(ctx context.Context, userID string) error
 
-	GetTodo(userID string, todoID string) (models.TodoResponse, error)
-	GetTodos(userID string) ([]models.TodoResponse, error)
-	AddTodo(userID string, todo models.TodoForm) (todoID string, err error)
-	ModTodo(userID string, todoID string, todo models.TodoForm) error
-	DelTodo(userID string, todoID string) error
+	GetTodo(ctx context.Context, userID string, todoID string) (models.TodoResponse, error)
+	GetTodos(ctx context.Context, userID string) ([]models.TodoResponse, error)
+	AddTodo(ctx context.Context, userID string, todo models.TodoForm) (todoID string, err error)
+	ModTodo(ctx context.Context, userID string, todoID string, todo models.TodoForm) error
+	DelTodo(ctx context.Context, userID string, todoID string) error
 
-	Close() error
+	Close(ctx context.Context) error
 }
 
-func OpenDefault() (Database, error) {
+func OpenDefault(ctx context.Context) (Database, error) {
 	uri, err := core.LoadEnv("DATABASE_URL")
 	if err != nil {
 		return nil, err
@@ -31,7 +32,7 @@ func OpenDefault() (Database, error) {
 
 	parsed, err := url.Parse(uri)
 	if parsed.Scheme == "mongodb" {
-		return MongoDBOpen(uri)
+		return MongoDBOpen(ctx, uri)
 	}
 
 	return nil, fmt.Errorf("Unknown database URL `%s`", uri)

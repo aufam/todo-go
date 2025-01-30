@@ -10,27 +10,24 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (d MongoDB) GetUserID(user models.UserForm) (string, error) {
+func (d *MongoDB) GetUserID(ctx context.Context, user models.UserForm) (string, error) {
 	col := d.DB.Collection("users")
-	ctx := context.Background()
 
-	hashedPassword, err := core.HashPassword(user.Password)
+	var userDB models.User
+	err := col.FindOne(ctx, bson.M{"username": user.Username}).Decode(&userDB)
 	if err != nil {
 		return "", err
 	}
 
-	var userDB models.User
-	err = col.FindOne(ctx, bson.M{"username": user.Username, "hashedPassword": hashedPassword}).Decode(&userDB)
-	if err != nil {
-		return "", err
+	if !core.CheckPassword(userDB.HashedPassword, user.Password) {
+		return "", fmt.Errorf("Invalid password")
 	}
 
 	return userDB.ID, nil
 }
 
-func (d MongoDB) GetUser(userID string) (models.UserResponse, error) {
+func (d *MongoDB) GetUser(ctx context.Context, userID string) (models.UserResponse, error) {
 	col := d.DB.Collection("users")
-	ctx := context.Background()
 
 	id, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
@@ -46,32 +43,33 @@ func (d MongoDB) GetUser(userID string) (models.UserResponse, error) {
 	return user.AsResponse(), nil
 }
 
-func (d MongoDB) GetUsers() ([]models.UserResponse, error) {
+func (d *MongoDB) GetUsers(ctx context.Context) ([]models.UserResponse, error) {
 	col := d.DB.Collection("users")
-	ctx := context.Background()
 
-	users := make([]models.UserResponse, 0)
 	cursor, err := col.Find(ctx, bson.M{})
 	if err != nil {
-		return users, err
+		return nil, err
 	}
 	defer cursor.Close(ctx)
 
+	users := make([]models.UserResponse, 0)
 	for cursor.Next(ctx) {
 		var user models.User
 		if err := cursor.Decode(&user); err != nil {
-			return users, err
+			return nil, err
 		}
-
 		users = append(users, user.AsResponse())
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, err
 	}
 
 	return users, nil
 }
 
-func (d MongoDB) AddUser(user models.UserForm) (string, error) {
+func (d *MongoDB) AddUser(ctx context.Context, user models.UserForm) (string, error) {
 	col := d.DB.Collection("users")
-	ctx := context.Background()
 
 	newUser, err := user.CreateModel()
 	if err != nil {
@@ -91,9 +89,8 @@ func (d MongoDB) AddUser(user models.UserForm) (string, error) {
 	return insertedID.Hex(), nil
 }
 
-func (d MongoDB) DelUser(userID string) error {
+func (d *MongoDB) DelUser(ctx context.Context, userID string) error {
 	col := d.DB.Collection("users")
-	ctx := context.Background()
 
 	id, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {

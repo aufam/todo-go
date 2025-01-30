@@ -42,7 +42,7 @@ func JWTEncode(userID string) (JWTResponse, error) {
 		},
 	})
 
-	res, err := token.SignedString(secretKey)
+	res, err := token.SignedString([]byte(secretKey))
 	if err != nil {
 		return JWTResponse{}, err
 	}
@@ -63,16 +63,27 @@ func JWTMiddleware(c *fiber.Ctx) error {
 		return err
 	}
 
-	userToken := c.Locals("jwt").(*jwt.Token)
-	claims, ok := userToken.Claims.(*JWTClaims)
+	userToken, ok := c.Locals("jwt").(*jwt.Token)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{Err: "Invalid token"})
+	}
+
+	claims, ok := userToken.Claims.(jwt.MapClaims)
 	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{Err: "Invalid token structure"})
 	}
 
-	if claims.ExpiresAt != nil && time.Now().After(claims.ExpiresAt.Time) {
-		return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{Err: "Token expired"})
+	if exp, ok := claims["exp"].(float64); ok {
+		if time.Now().After(time.Unix(int64(exp), 0)) {
+			return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{Err: "Token expired"})
+		}
 	}
 
-	c.Locals("userID", claims.UserID)
+	userID, ok := claims["userID"].(string)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{Err: "Invalid user ID"})
+	}
+
+	c.Locals("userID", userID)
 	return c.Next()
 }

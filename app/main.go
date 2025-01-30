@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	v1 "todo-go/api/v1"
 	"todo-go/core"
@@ -13,15 +14,14 @@ import (
 )
 
 func main() {
-	database, err := db.OpenDefault()
+	ctx := context.Background()
+	database, err := db.OpenDefault(ctx)
 	if err != nil {
 		panic(err)
 	}
-
-	defer database.Close()
+	defer database.Close(ctx)
 
 	app := fiber.New()
-
 	app.Use(cors.New())
 	app.Use(logger.New())
 	app.Use(recover.New())
