@@ -23,6 +23,9 @@ It is a complete rewrite for similar project of [todo-cpp](https://github.com/au
 - **Reverse Proxy:** Nginx
 - **Database UI:** Mongo-Express
 
+## Database Model
+You can see the database schema for this project [here](https://dbdiagram.io/d/Todo-66fa2a8af9b1444815d8a247)
+
 ## Getting Started
 ### Prerequisites
 Make sure you have the following installed:
