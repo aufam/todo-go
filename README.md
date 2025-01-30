@@ -36,21 +36,11 @@ git clone https://github.com/aufam/todo-go.git
 cd todo-go
 ```
 
-### Run Locally
-1. Copy the example `.env` file and modify as needed:
-   ```bash
-   cp template.env .env
-   ```
-2. Install dependencies:
-   ```bash
-   go mod tidy
-   ```
-3. Start the application:
-   ```bash
-   go run main.go
-   ```
-
 ### Run with Docker Compose
+Copy the example `.env` file and modify as needed:
+```bash
+cp template.env .env
+```
 To deploy the entire stack using Docker Compose, run:
 ```bash
 docker-compose up -d
