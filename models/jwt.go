@@ -1,11 +1,12 @@
 package models
 
 import (
+	"fmt"
 	"os"
+	"strings"
 	"time"
 	"todo-go/core"
 
-	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -51,39 +52,38 @@ func JWTEncode(userID string) (JWTResponse, error) {
 }
 
 func JWTMiddleware(c *fiber.Ctx) error {
-	middleware := jwtware.New(jwtware.Config{
-		SigningKey: jwtware.SigningKey{Key: []byte(os.Getenv("JWT_SECRET_KEY"))},
-		ContextKey: "jwt",
-		ErrorHandler: func(c *fiber.Ctx, err error) error {
-			return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{Err: "Invalid or expired token"})
-		},
+	checkToken := func(auth string) string {
+		authentication := c.Get(auth)
+		if strings.HasPrefix(authentication, "Bearer ") {
+			return strings.TrimPrefix(authentication, "Bearer ")
+		}
+		return ""
+	}
+
+	tokenString := checkToken("Authentication")
+	if tokenString == "" {
+		tokenString = checkToken("authentication")
+	}
+	if tokenString == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{Err: "You are not logged in"})
+	}
+
+	claims := JWTClaims{}
+	_, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method")
+		}
+		return []byte(os.Getenv("JWT_SECRET_KEY")), nil
 	})
 
-	if err := middleware(c); err != nil {
-		return err
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(MakeErrorResponse(err))
 	}
 
-	userToken, ok := c.Locals("jwt").(*jwt.Token)
-	if !ok {
-		return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{Err: "Invalid token"})
+	if time.Now().After(claims.ExpiresAt.Time) {
+		return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{Err: "Token expired"})
 	}
 
-	claims, ok := userToken.Claims.(jwt.MapClaims)
-	if !ok {
-		return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{Err: "Invalid token structure"})
-	}
-
-	if exp, ok := claims["exp"].(float64); ok {
-		if time.Now().After(time.Unix(int64(exp), 0)) {
-			return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{Err: "Token expired"})
-		}
-	}
-
-	userID, ok := claims["userID"].(string)
-	if !ok {
-		return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{Err: "Invalid user ID"})
-	}
-
-	c.Locals("userID", userID)
+	c.Locals("userID", claims.UserID)
 	return c.Next()
 }
