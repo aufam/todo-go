@@ -20,7 +20,7 @@ async function signup() {
         document.getElementById('auth-status').textContent = 'Signup successful, logged in!';
         document.getElementById('auth-section').style.display = 'none';
         document.getElementById('todo-section').style.display = 'block';
-        loadTodos();
+        await loadTodos();
     } else {
         document.getElementById('auth-status').textContent = 
             `Signup failed (${response.statusText}): ${result}`;
@@ -45,7 +45,7 @@ async function login() {
         document.getElementById('auth-status').textContent = 'Login successful!';
         document.getElementById('auth-section').style.display = 'none';
         document.getElementById('todo-section').style.display = 'block';
-        loadTodos();
+        await loadTodos();
     } else {
         document.getElementById('auth-status').textContent = 
             `Login failed (${response.statusText}): ${result}`;
@@ -68,14 +68,27 @@ async function loadTodos() {
         todos.forEach(todo => {
             const todoItem = document.createElement('div');
             todoItem.className = `todo-item ${todo.isDone ? 'completed' : ''}`;
-            todoItem.innerHTML = `
-                <h3>${todo.task}</h3>
-                <h8>Created at: ${todo.createdAt}</h8>
-                <button onclick="toggleTodoStatus(${todo.id}, ${todo.isDone})">${todo.isDone ? 'Undo' : 'Complete'}</button>
-                <button onclick="deleteTodo(${todo.id})">Delete</button>
-            `;
-            todoList.appendChild(todoItem);
-        });
+
+            const taskTitle = document.createElement('h3');
+            taskTitle.textContent = todo.task;
+
+            const createdAt = document.createElement('h8');
+            createdAt.textContent = `Created at: ${todo.createdAt}`;
+
+            const toggleButton = document.createElement('button');
+            toggleButton.textContent = todo.isDone ? 'Undo' : 'Complete';
+            toggleButton.addEventListener('click', () => toggleTodoStatus(todo.id, todo.isDone));
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', () => deleteTodo(todo.id));
+
+            todoItem.appendChild(taskTitle);
+            todoItem.appendChild(createdAt);
+            todoItem.appendChild(toggleButton);
+            todoItem.appendChild(deleteButton);
+
+            todoList.appendChild(todoItem);});
     }
 }
 
@@ -93,7 +106,7 @@ async function createTodo() {
     });
 
     if (response.ok) {
-        loadTodos();
+        await loadTodos();
     }
 }
 
@@ -109,7 +122,7 @@ async function toggleTodoStatus(id, currentStatus) {
     });
 
     if (response.ok) {
-        loadTodos();
+        await loadTodos();
     }
 }
 
@@ -123,7 +136,7 @@ async function deleteTodo(id) {
     });
 
     if (response.ok) {
-        loadTodos();
+        await loadTodos();
     }
 }
 
