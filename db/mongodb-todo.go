@@ -77,7 +77,15 @@ func (d *MongoDB) ModTodo(ctx context.Context, userID string, todoID string, tod
 		return err
 	}
 
-	_, err = col.UpdateOne(ctx, bson.M{"_id": id, "userId": userID}, bson.M{"$set": todo})
+	update := bson.M{}
+	if todo.Task != nil && *todo.Task != "" {
+		update["task"] = *todo.Task
+	}
+	if todo.IsDone != nil {
+		update["isDone"] = *todo.IsDone
+	}
+
+	_, err = col.UpdateOne(ctx, bson.M{"_id": id, "userId": userID}, bson.M{"$set": update})
 	return err
 }
 

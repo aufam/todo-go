@@ -25,8 +25,8 @@ type TodoResponse struct {
 
 // request model
 type TodoForm struct {
-	Task   string `json:"task,omitempty"`
-	IsDone bool   `json:"isDone,omitempty"`
+	Task   *string `json:"task,omitempty"`
+	IsDone *bool   `json:"isDone,omitempty"`
 }
 
 func (t *Todo) AsResponse() TodoResponse {
@@ -39,14 +39,20 @@ func (t *Todo) AsResponse() TodoResponse {
 }
 
 func (t *TodoForm) CreateModel(userID string) (Todo, error) {
-	if strings.TrimSpace(t.Task) == "" {
+	task := ""
+	isDone := t.IsDone != nil && *t.IsDone
+	if t.Task != nil {
+		task = *t.Task
+	}
+
+	if strings.TrimSpace(task) == "" {
 		return Todo{}, fmt.Errorf("Task cannot be empty")
 	}
 
 	return Todo{
 		UserID:    userID,
-		Task:      t.Task,
-		IsDone:    t.IsDone,
+		Task:      task,
+		IsDone:    isDone,
 		CreatedAt: time.Now(),
 	}, nil
 }
