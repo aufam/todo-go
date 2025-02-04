@@ -6,6 +6,8 @@ and Mongo-Express for database management.
 
 It is a complete rewrite for similar project of [todo-cpp](https://github.com/aufam/todo)
 
+![demo](demo.gif)
+
 ## Features
 - User authentication with JWT
 - Password hashing using bcrypt
