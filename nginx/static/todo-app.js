@@ -1,21 +1,21 @@
 let token = null;
 let g_username = null;
-const API_ROUTE = ""
+const API_ROUTE = "/api/v1"
 
 // Handle Signup
 async function signup() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
-    const response = await fetch(`${API_ROUTE}/api/v1/user/signup`, {
+    const response = await fetch(`${API_ROUTE}/user/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
     });
 
-    const result = await response.text();
+    const result = await response.json();
     if (response.ok) {
-        token = result;
+        token = result.token;
         g_username = username;
         document.getElementById('auth-status').textContent = 'Signup successful, logged in!';
         document.getElementById('auth-section').style.display = 'none';
@@ -32,15 +32,15 @@ async function login() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
-    const response = await fetch(`${API_ROUTE}/api/v1/user/login`, {
+    const response = await fetch(`${API_ROUTE}/user/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
     });
 
-    const result = await response.text();
+    const result = await response.json();
     if (response.ok) {
-        token = result;
+        token = result.token;
         g_username = username;
         document.getElementById('auth-status').textContent = 'Login successful!';
         document.getElementById('auth-section').style.display = 'none';
@@ -54,7 +54,7 @@ async function login() {
 
 // Load Todos
 async function loadTodos() {
-    const response = await fetch(`${API_ROUTE}/api/v1/todos`, {
+    const response = await fetch(`${API_ROUTE}/todos`, {
         headers: { 'Authentication': `Bearer ${token}` }
     });
     const headerTitle = document.getElementById('header-title');
@@ -67,11 +67,11 @@ async function loadTodos() {
     if (response.ok) {
         todos.forEach(todo => {
             const todoItem = document.createElement('div');
-            todoItem.className = `todo-item ${todo.is_done ? 'completed' : ''}`;
+            todoItem.className = `todo-item ${todo.isDone ? 'completed' : ''}`;
             todoItem.innerHTML = `
                 <h3>${todo.task}</h3>
-                <h8>Created at: ${todo.created_at}</h8>
-                <button onclick="toggleTodoStatus(${todo.id}, ${todo.is_done})">${todo.is_done ? 'Undo' : 'Complete'}</button>
+                <h8>Created at: ${todo.createdAt}</h8>
+                <button onclick="toggleTodoStatus(${todo.id}, ${todo.isDone})">${todo.isDone ? 'Undo' : 'Complete'}</button>
                 <button onclick="deleteTodo(${todo.id})">Delete</button>
             `;
             todoList.appendChild(todoItem);
@@ -83,7 +83,7 @@ async function loadTodos() {
 async function createTodo() {
     const task = document.getElementById('new-todo').value;
 
-    const response = await fetch(`${API_ROUTE}/api/v1/todo`, {
+    const response = await fetch(`${API_ROUTE}/todo`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -99,13 +99,13 @@ async function createTodo() {
 
 // Toggle Todo Status
 async function toggleTodoStatus(id, currentStatus) {
-    const response = await fetch(`${API_ROUTE}/api/v1/todo/{id}`, {
+    const response = await fetch(`${API_ROUTE}/todo/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
             'Authentication': `Bearer ${token}`
         },
-        body: JSON.stringify({ is_done: !currentStatus })
+        body: JSON.stringify({ isDone: !currentStatus })
     });
 
     if (response.ok) {
@@ -115,7 +115,7 @@ async function toggleTodoStatus(id, currentStatus) {
 
 // Delete Todo
 async function deleteTodo(id) {
-    const response = await fetch(`${API_ROUTE}/api/v1/todo/{id}`, {
+    const response = await fetch(`${API_ROUTE}/todo/${id}`, {
         method: 'DELETE',
         headers: {
             'Authentication': `Bearer ${token}`

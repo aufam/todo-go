@@ -8,9 +8,9 @@ import (
 // database model
 type User struct {
 	ID             string    `json:"id,omitempty" bson:"_id,omitempty"`
-	Username       string    `json:"username"`
-	HashedPassword string    `json:"hashedPassword"`
-	CreatedAt      time.Time `json:"createdAt"`
+	Username       string    `json:"username" bson:"username"`
+	HashedPassword string    `json:"hashedPassword" bson:"hashedPassword"`
+	CreatedAt      time.Time `json:"createdAt" bson:"createdAt"`
 }
 
 // response model

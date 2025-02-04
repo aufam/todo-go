@@ -17,13 +17,8 @@ func (d *MongoDB) GetTodo(ctx context.Context, userID string, todoID string) (mo
 		return models.TodoResponse{}, err
 	}
 
-	idUser, err := primitive.ObjectIDFromHex(userID)
-	if err != nil {
-		return models.TodoResponse{}, err
-	}
-
 	var todo models.Todo
-	err = col.FindOne(ctx, bson.M{"_id": id, "userID": idUser}).Decode(&todo)
+	err = col.FindOne(ctx, bson.M{"_id": id, "userId": userID}).Decode(&todo)
 	if err != nil {
 		return models.TodoResponse{}, err
 	}
@@ -34,18 +29,13 @@ func (d *MongoDB) GetTodo(ctx context.Context, userID string, todoID string) (mo
 func (d *MongoDB) GetTodos(ctx context.Context, userID string) ([]models.TodoResponse, error) {
 	col := d.DB.Collection("todos")
 
-	todos := make([]models.TodoResponse, 0)
-	id, err := primitive.ObjectIDFromHex(userID)
+	cursor, err := col.Find(ctx, bson.M{"userId": userID})
 	if err != nil {
-		return todos, err
-	}
-
-	cursor, err := col.Find(ctx, bson.M{"userID": id})
-	if err != nil {
-		return todos, err
+		return nil, err
 	}
 	defer cursor.Close(ctx)
 
+	var todos []models.TodoResponse
 	for cursor.Next(ctx) {
 		var todo models.Todo
 		if err := cursor.Decode(&todo); err != nil {
@@ -87,12 +77,7 @@ func (d *MongoDB) ModTodo(ctx context.Context, userID string, todoID string, tod
 		return err
 	}
 
-	idUser, err := primitive.ObjectIDFromHex(userID)
-	if err != nil {
-		return err
-	}
-
-	_, err = col.UpdateOne(ctx, bson.M{"_id": id, "userID": idUser}, bson.M{"$set": todo})
+	_, err = col.UpdateOne(ctx, bson.M{"_id": id, "userId": userID}, bson.M{"$set": todo})
 	return err
 }
 
@@ -104,12 +89,7 @@ func (d *MongoDB) DelTodo(ctx context.Context, userID string, todoID string) err
 		return err
 	}
 
-	idUser, err := primitive.ObjectIDFromHex(userID)
-	if err != nil {
-		return err
-	}
-
-	result, err := col.DeleteOne(ctx, bson.M{"_id": id, "userID": idUser})
+	result, err := col.DeleteOne(ctx, bson.M{"_id": id, "userId": userID})
 	if err != nil {
 		return err
 	}

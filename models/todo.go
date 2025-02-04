@@ -9,10 +9,10 @@ import (
 // database model
 type Todo struct {
 	ID        string    `json:"id,omitempty" bson:"_id,omitempty"`
-	UserID    string    `json:"userId"`
-	Task      string    `json:"task"`
-	IsDone    bool      `json:"isDone"`
-	CreatedAt time.Time `json:"createdAt"`
+	UserID    string    `json:"userId" bson:"userId"`
+	Task      string    `json:"task" bson:"task"`
+	IsDone    bool      `json:"isDone" bson:"isDone"`
+	CreatedAt time.Time `json:"createdAt" bson:"createdAt"`
 }
 
 // response model
